@@ -239,7 +239,8 @@ export class DeepSeekClient {
     if ((data.code as number) !== 0) {
       throw new Error(`获取 PoW challenge 失败: ${JSON.stringify(data)}`);
     }
-    return (data.data as Record<string, unknown>).biz_data as Record<string, unknown>;
+    const bizData = (data.data as Record<string, unknown>).biz_data as Record<string, unknown>;
+    return bizData.challenge as Record<string, unknown>;
   }
 
   /** 流式 SSE 聊天(底层) */
@@ -253,6 +254,8 @@ export class DeepSeekClient {
   ): AsyncGenerator<SSEEvent> {
     // 1) PoW
     const ch = await this.getPowChallenge();
+    console.log("[DEBUG] PoW challenge keys:", Object.keys(ch));
+    console.log("[DEBUG] challenge type:", typeof ch.challenge, "salt type:", typeof ch.salt, "expire_at type:", typeof ch.expire_at, "difficulty type:", typeof ch.difficulty);
     const answer = solvePow(
       ch.challenge as string,
       ch.salt as string,
